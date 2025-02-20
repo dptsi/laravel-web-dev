@@ -13,30 +13,30 @@ RUN docker-php-ext-install bcmath gd exif pcntl intl zip
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 #Download the desired package(s)
-RUN curl -O https://download.microsoft.com/download/b/9/f/b9f3cce4-3925-46d4-9f46-da08869c6486/msodbcsql18_18.1.1.1-1_amd64.apk
-RUN curl -O https://download.microsoft.com/download/b/9/f/b9f3cce4-3925-46d4-9f46-da08869c6486/mssql-tools18_18.1.1.1-1_amd64.apk
+RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.10.6.1-1_amd64.apk
+RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.10.1.1-1_amd64.apk
 
 #(Optional) Verify signature, if 'gpg' is missing install it using 'apk add gnupg':
-RUN curl -O https://download.microsoft.com/download/b/9/f/b9f3cce4-3925-46d4-9f46-da08869c6486/msodbcsql18_18.1.1.1-1_amd64.sig
-RUN curl -O https://download.microsoft.com/download/b/9/f/b9f3cce4-3925-46d4-9f46-da08869c6486/mssql-tools18_18.1.1.1-1_amd64.sig
+RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.10.6.1-1_amd64.sig
+RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.10.1.1-1_amd64.sig
 
 RUN curl https://packages.microsoft.com/keys/microsoft.asc  | gpg --import -
-RUN gpg --verify msodbcsql18_18.1.1.1-1_amd64.sig msodbcsql18_18.1.1.1-1_amd64.apk
-RUN gpg --verify mssql-tools18_18.1.1.1-1_amd64.sig mssql-tools18_18.1.1.1-1_amd64.apk
+RUN gpg --verify msodbcsql17_17.10.6.1-1_amd64.sig msodbcsql17_17.10.6.1-1_amd64.apk
+RUN gpg --verify mssql-tools_17.10.1.1-1_amd64.sig mssql-tools_17.10.1.1-1_amd64.apk
 
 #Install the package(s)
-RUN apk add --allow-untrusted msodbcsql18_18.1.1.1-1_amd64.apk
-RUN apk add --allow-untrusted mssql-tools18_18.1.1.1-1_amd64.apk
+RUN apk add --allow-untrusted msodbcsql17_17.10.6.1-1_amd64.apk
+RUN apk add --allow-untrusted mssql-tools_17.10.1.1-1_amd64.apk
 
 # Set mssql-tools ENV variable to the PATH
 ENV PATH "$PATH:/opt/mssql-tools/bin"
 RUN echo $PATH
 
 # Remove the ODBC packages
-RUN rm msodbcsql18_18.1.1.1-1_amd64.apk \
-    mssql-tools18_18.1.1.1-1_amd64.apk \
-    msodbcsql18_18.1.1.1-1_amd64.sig \
-    mssql-tools18_18.1.1.1-1_amd64.sig
+RUN rm msodbcsql17_17.10.6.1-1_amd64.apk \
+    mssql-tools_17.10.1.1-1_amd64.apk \
+    msodbcsql17_17.10.6.1-1_amd64.sig \
+    mssql-tools_17.10.1.1-1_amd64.sig
 
 # Install unixodbc-dev required for pecl
 RUN apk add --allow-untrusted unixodbc-dev
