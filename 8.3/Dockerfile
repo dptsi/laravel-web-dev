@@ -45,13 +45,11 @@ RUN apk add --allow-untrusted unixodbc-dev
 RUN pecl channel-update pecl.php.net
 RUN pecl install sqlsrv-5.12.0
 RUN pecl install pdo_sqlsrv-5.12.0
-RUN pecl install rdkafka    
-RUN pecl install imagick
+RUN pecl install rdkafka 
 
 RUN docker-php-ext-enable --ini-name 30-sqlsrv.ini sqlsrv
 RUN docker-php-ext-enable --ini-name 35-pdo_sqlsrv.ini pdo_sqlsrv
 RUN docker-php-ext-enable rdkafka
-RUN docker-php-ext-enable imagick
 
 # Install Xdebug
 RUN pecl install xdebug-3.2.0
