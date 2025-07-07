@@ -5,7 +5,7 @@ RUN apk --no-cache add gnupg autoconf make g++ nginx supervisor zlib-dev libpng-
     rm /etc/nginx/conf.d/default.conf
 
 # Install PHP extensions
-RUN docker-php-ext-install bcmath gd exif pcntl intl zip
+RUN docker-php-ext-install RUN docker-php-ext-install bcmath calendar ctype curl dom exif fileinfo ftp gd gettext iconv intl json mbstring mcrypt pcntl phar posix readline shmop simplexml sockets sysvmsg sysvsem sysvshm tokenizer wddx xml xmlreader xmlwriter xsl zip
 
 # Get latest Composer
 COPY --from=composer:2.2.18 /usr/bin/composer /usr/bin/composer
@@ -40,8 +40,8 @@ RUN apk add --allow-untrusted unixodbc-dev
 
 # Install SQL Server Drivers
 RUN pecl channel-update pecl.php.net
-RUN pecl install sqlsrv-5.6.0
-RUN pecl install pdo_sqlsrv-5.6.0
+RUN pecl install sqlsrv-5.6.1
+RUN pecl install pdo_sqlsrv-5.6.1
 RUN pecl install rdkafka    
 RUN docker-php-ext-enable --ini-name 30-sqlsrv.ini sqlsrv
 RUN docker-php-ext-enable --ini-name 35-pdo_sqlsrv.ini pdo_sqlsrv
