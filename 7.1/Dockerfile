@@ -3,10 +3,10 @@ FROM php:7.1-fpm-alpine3.10
 # Install packages and remove default server definition
 RUN apk --no-cache add gnupg autoconf make g++ nginx supervisor zlib-dev libpng-dev icu-dev icu-libs librdkafka-dev git libzip-dev shadow nodejs nodejs-npm && \
     rm /etc/nginx/conf.d/default.conf
+RUN apk --no-cache add libxml2-dev
 
 # Install PHP extensions
-RUN docker-php-ext-install bcmath calendar ctype curl dom exif fileinfo ftp gd gettext iconv intl json mbstring mcrypt pcntl phar posix readline shmop simplexml sockets sysvmsg sysvsem sysvshm tokenizer wddx xml xmlreader xmlwriter xsl zip
-
+RUN docker-php-ext-install bcmath calendar ctype exif fileinfo gd iconv intl json mbstring pcntl posix shmop sockets sysvmsg sysvsem sysvshm tokenizer xml 
 # Get latest Composer
 COPY --from=composer:2.2.18 /usr/bin/composer /usr/bin/composer
 
@@ -52,7 +52,7 @@ RUN pecl install xdebug-2.9.0
 RUN docker-php-ext-enable --ini-name 30-xdebug.ini xdebug
 
 # Install redis
-RUN echo '' | pecl install -o -f redis &&  rm -rf /tmp/pear &&  docker-php-ext-enable redis
+RUN echo '' | pecl install -o -f redis-6.0.1 &&  rm -rf /tmp/pear &&  docker-php-ext-enable redis
 
 # Configure nginx
 COPY config/nginx.conf /etc/nginx/nginx.conf
