@@ -5,7 +5,7 @@ RUN apk --no-cache add gnupg autoconf make g++ nginx supervisor zlib-dev libpng-
     rm /etc/nginx/conf.d/default.conf
 
 # Install PHP extensions
-RUN docker-php-ext-install RUN docker-php-ext-install bcmath calendar ctype curl dom exif fileinfo ftp gd gettext iconv intl json mbstring mcrypt pcntl phar posix readline shmop simplexml sockets sysvmsg sysvsem sysvshm tokenizer wddx xml xmlreader xmlwriter xsl zip
+RUN docker-php-ext-install bcmath calendar ctype curl dom exif fileinfo ftp gd gettext iconv intl json mbstring mcrypt pcntl phar posix readline shmop simplexml sockets sysvmsg sysvsem sysvshm tokenizer wddx xml xmlreader xmlwriter xsl zip
 
 # Get latest Composer
 COPY --from=composer:2.2.18 /usr/bin/composer /usr/bin/composer
