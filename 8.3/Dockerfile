@@ -1,81 +1,52 @@
 FROM php:8.3.17-fpm-alpine3.20
 
-# Install packages and remove default server definition
-RUN apk --no-cache add gnupg autoconf make g++ nginx supervisor zlib-dev libpng-dev icu-dev icu-libs librdkafka-dev git libzip-dev shadow nodejs npm file imagemagick imagemagick-dev
+# Install dependencies
+RUN apk --no-cache add --virtual .build-deps \
+      autoconf make g++ zlib-dev libpng-dev icu-dev libzip-dev shadow \
+      imagemagick-dev unixodbc-dev git curl gnupg \
+    && apk --no-cache add \
+      nginx supervisor icu-libs librdkafka-dev \
+      nodejs npm file imagemagick \
+    && docker-php-ext-install -j$(nproc) bcmath gd exif pcntl intl zip \
+    && pecl channel-update pecl.php.net \
+    && pecl install sqlsrv-5.12.0 pdo_sqlsrv-5.12.0 rdkafka \
+    && echo '' | pecl install -o -f redis \
+    && docker-php-ext-enable \
+         redis sqlsrv pdo_sqlsrv rdkafka \
+    && rm -rf /tmp/pear
 
-# Update Linux Header
-RUN apk add --update linux-headers
-
-# Install PHP extensions
-RUN docker-php-ext-install bcmath gd exif pcntl intl zip
-
-# Get latest Composer
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-#Download the desired package(s)
-RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.10.6.1-1_amd64.apk
-RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.10.1.1-1_amd64.apk
+# Install Microsoft ODBC + Tools
+RUN curl -sSL -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.10.6.1-1_amd64.apk \
+    -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.10.1.1-1_amd64.apk \
+    -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.10.6.1-1_amd64.sig \
+    -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.10.1.1-1_amd64.sig \
+    && curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --import - \
+    && gpg --verify msodbcsql17_17.10.6.1-1_amd64.sig msodbcsql17_17.10.6.1-1_amd64.apk \
+    && gpg --verify mssql-tools_17.10.1.1-1_amd64.sig mssql-tools_17.10.1.1-1_amd64.apk \
+    && apk add --allow-untrusted \
+         msodbcsql17_17.10.6.1-1_amd64.apk \
+         mssql-tools_17.10.1.1-1_amd64.apk \
+    && rm msodbcsql17_17.10.6.1-1_amd64.* mssql-tools_17.10.1.1-1_amd64.* \
+    && apk del .build-deps
 
-#(Optional) Verify signature, if 'gpg' is missing install it using 'apk add gnupg':
-RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.10.6.1-1_amd64.sig
-RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.10.1.1-1_amd64.sig
+# Set PATH for mssql-tools
+ENV PATH="$PATH:/opt/mssql-tools/bin"
 
-RUN curl https://packages.microsoft.com/keys/microsoft.asc  | gpg --import -
-RUN gpg --verify msodbcsql17_17.10.6.1-1_amd64.sig msodbcsql17_17.10.6.1-1_amd64.apk
-RUN gpg --verify mssql-tools_17.10.1.1-1_amd64.sig mssql-tools_17.10.1.1-1_amd64.apk
-
-#Install the package(s)
-RUN apk add --allow-untrusted msodbcsql17_17.10.6.1-1_amd64.apk
-RUN apk add --allow-untrusted mssql-tools_17.10.1.1-1_amd64.apk
-
-# Set mssql-tools ENV variable to the PATH
-ENV PATH "$PATH:/opt/mssql-tools/bin"
-RUN echo $PATH
-
-# Remove the ODBC packages
-RUN rm msodbcsql17_17.10.6.1-1_amd64.apk \
-    mssql-tools_17.10.1.1-1_amd64.apk \
-    msodbcsql17_17.10.6.1-1_amd64.sig \
-    mssql-tools_17.10.1.1-1_amd64.sig
-
-# Install unixodbc-dev required for pecl
-RUN apk add --allow-untrusted unixodbc-dev
-
-# Install SQL Server Drivers
-RUN pecl channel-update pecl.php.net
-RUN pecl install sqlsrv-5.12.0
-RUN pecl install pdo_sqlsrv-5.12.0
-RUN pecl install rdkafka 
-
-RUN docker-php-ext-enable --ini-name 30-sqlsrv.ini sqlsrv
-RUN docker-php-ext-enable --ini-name 35-pdo_sqlsrv.ini pdo_sqlsrv
-RUN docker-php-ext-enable rdkafka
-
-# Install Xdebug
-# RUN pecl install xdebug-3.2.0
-# RUN docker-php-ext-enable --ini-name 30-xdebug.ini xdebug
-
-# Configure nginx
+# Configure Nginx, PHP, Supervisor
 COPY config/nginx.conf /etc/nginx/nginx.conf
-
-# Configure PHP
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 COPY config/php.ini /usr/local/etc/php/conf.d/custom.ini
-
-# Configure supervisord
 COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Setup document root
-RUN mkdir -p /var/www/html
-
-# Add application
+# Setup app
 WORKDIR /var/www/html
-
-# Add a volume so that the external source code can be hooked
 VOLUME [ "/var/www/html" ]
 
-# Expose the port nginx is reachable on
+# Expose Nginx
 EXPOSE 8080
 
-# Let supervisord start nginx & php-fpm
+# Start supervisord
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
