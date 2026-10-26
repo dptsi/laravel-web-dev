@@ -1,4 +1,4 @@
-FROM php:8.4-fpm-bookworm
+FROM php:8.4.27-fpm-bookworm
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG MSSQL_REPO_MAJOR=12
