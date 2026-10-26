@@ -22,6 +22,7 @@ RUN apk --no-cache add \
     imagemagick \
     imagemagick-dev \
     unixodbc-dev \
+    postgresql-dev \
     linux-headers
 
 # Install PHP extensions
@@ -31,7 +32,8 @@ RUN docker-php-ext-install \
     exif \
     pcntl \
     intl \
-    zip
+    zip \
+    pdo_pgsql
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

@@ -3,11 +3,11 @@ FROM php:8.2.35-fpm-alpine3.23
 # Install dependencies
 RUN apk --no-cache add --virtual .build-deps \
       autoconf make g++ zlib-dev libpng-dev icu-dev libzip-dev shadow \
-      imagemagick-dev unixodbc-dev git curl gnupg \
+      imagemagick-dev unixodbc-dev postgresql-dev git curl gnupg \
     && apk --no-cache add \
-      nginx supervisor icu-libs librdkafka-dev \
+      nginx supervisor icu-libs libpq librdkafka-dev \
       nodejs npm file imagemagick \
-    && docker-php-ext-install -j$(nproc) bcmath gd exif pcntl intl zip \
+    && docker-php-ext-install -j$(nproc) bcmath gd exif pcntl intl zip pdo_pgsql \
     && pecl channel-update pecl.php.net \
     && pecl install sqlsrv-5.12.0 pdo_sqlsrv-5.12.0 rdkafka \
     && echo '' | pecl install -o -f redis \
