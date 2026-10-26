@@ -1,4 +1,4 @@
-FROM php:8.5-fpm-trixie
+FROM php:8.5.12-fpm-trixie
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG MSSQL_REPO_MAJOR=13
