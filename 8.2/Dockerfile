@@ -1,4 +1,4 @@
-FROM php:8.2.28-fpm-alpine3.21
+FROM php:8.2.35-fpm-alpine3.23
 
 # Install dependencies
 RUN apk --no-cache add --virtual .build-deps \
