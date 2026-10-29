@@ -26,4 +26,4 @@ RUN apk --no-cache --virtual .build-deps add \
     pecl install grpc-1.70.0 && \
     apk del .build-deps
 
-RUN docker-php-ext-enable grpc-1.70.0
+RUN docker-php-ext-enable grpc
