@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
     libmagickwand-dev \ 
     librdkafka-dev \
-    && pecl install sqlsrv pdo_sqlsrv \
+    && pecl install sqlsrv-5.12.0 pdo_sqlsrv-5.12.0 \
     && docker-php-ext-enable sqlsrv pdo_sqlsrv \
     && pecl install xdebug-3.2.0 \
     && docker-php-ext-enable --ini-name 30-xdebug.ini xdebug \
