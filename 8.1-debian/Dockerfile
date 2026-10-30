@@ -1,6 +1,12 @@
 # Base image
 FROM php:8.1.19-apache-bullseye
 
+# Bullseye is EOL: its repos moved to archive.debian.org, so replace sources.list to avoid 404s.
+RUN printf "deb http://archive.debian.org/debian bullseye main\n" > /etc/apt/sources.list && \
+    printf "deb http://archive.debian.org/debian-security bullseye-security main\n" >> /etc/apt/sources.list && \
+    rm -f /etc/apt/sources.list.d/*.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99archive
+
 ADD config/lib/libltdl.la /usr/lib/x86_64-linux-gnu/libltdl.la
 # Install required packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
