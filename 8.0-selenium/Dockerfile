@@ -1,9 +1,17 @@
 FROM php:8.0-fpm-buster
+# ^ this is deprecated!
+# ^ when that is deprecated, apt sources.list will fail due to repository domain reasons.
+# we are adding a patch so that apt could still succeed.
 
 ENV ACCEPT_EULA=Y
 
-# Install prerequisites required for tools and extensions installed later on.sssss
-RUN apt-get update && \
+# Buster is EOL: its repos moved to archive.debian.org, so replace sources.list to avoid 404s.
+# Install prerequisites required for tools and extensions installed later on.
+RUN printf "deb http://archive.debian.org/debian buster main\n" > /etc/apt/sources.list && \
+    printf "deb http://archive.debian.org/debian-security buster/updates main\n" >> /etc/apt/sources.list && \
+    rm -f /etc/apt/sources.list.d/*.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99archive && \
+    apt-get update && \
     apt-get install -y gnupg nginx wget curl unzip supervisor librdkafka-dev gnupg2 libpng-dev libzip-dev apt-transport-https --no-install-recommends && \
     wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
